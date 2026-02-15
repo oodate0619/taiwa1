@@ -63,6 +63,7 @@
       font-weight:700;
       font-size:13px;
       box-shadow: 0 1px 0 rgba(17,24,39,.04);
+      white-space:nowrap;
     }
     button:hover{transform: translateY(-1px); border-color: rgba(37,99,235,.25)}
     button:active{transform: translateY(0px)}
@@ -80,10 +81,6 @@
       background: rgba(22,163,74,.08);
       border-color: rgba(22,163,74,.22);
       color:#14532d;
-      white-space:nowrap;
-    }
-    button.ghost{
-      background: #fff;
     }
 
     main .grid{
@@ -117,19 +114,28 @@
     }
     .panel .hd .sub{color:var(--muted); font-size:12px}
     .panel .bd{padding:14px; display:flex; flex-direction:column; gap:12px; overflow:auto;}
+
+    /* フッター：PCは1行。スマホは2行にして横並び維持 */
     .panel .ft{
       padding:12px 14px;
       border-top:1px solid var(--border);
-      display:flex;
-      gap:10px;
-      align-items:center;
       background: rgba(17,24,39,.02);
       position: sticky;
       bottom: 0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .ft-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:nowrap;
     }
 
     .input{
       flex:1;
+      min-width: 0;
       border:1px solid var(--border);
       background: #fff;
       color:var(--text);
@@ -196,14 +202,33 @@
       padding:12px;
       box-shadow: 0 8px 18px rgba(17,24,39,.06);
     }
-    .card h3{margin:0 0 8px; font-size:14px}
-    .kv{
+    .card h3{margin:0 0 10px; font-size:14px}
+
+    /* サマリー：縦リスト→2列のコンパクトカードに変更 */
+    .summary-grid{
       display:grid;
-      grid-template-columns: 140px 1fr;
-      gap:8px 10px;
-      font-size:13px;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
     }
-    .kv div:nth-child(odd){color:var(--muted)}
+    .sum-item{
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.02);
+      border-radius: 14px;
+      padding:10px 10px;
+      min-height: 56px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:4px;
+    }
+    .sum-k{font-size:12px; color:var(--muted); font-weight:800}
+    .sum-v{font-size:13.5px; font-weight:800; line-height:1.35}
+    .sum-v.muted{font-weight:700}
+
+    .sum-wide{
+      grid-column: 1 / -1; /* 制約は横幅いっぱい */
+    }
+
     .hr{height:1px; background: var(--border); margin:12px 0}
 
     table{
@@ -245,10 +270,10 @@
     @media (max-width: 520px){
       .panel{min-height: 560px;}
       .panel .bd{padding:12px}
-      .panel .ft{gap:8px; padding:10px}
-      button, .pill{padding:11px 12px}
+      button{padding:11px 12px}
       .chip{padding:11px 12px}
-      .kv{grid-template-columns: 110px 1fr;}
+      .summary-grid{grid-template-columns: 1fr 1fr;} /* 2列維持 */
+      .ft-row{gap:8px;}
     }
   </style>
 </head>
@@ -284,14 +309,16 @@
 
       <div class="bd" id="chat"></div>
 
+      <!-- フッター：スマホでも「入力例」が縦に落ちず、横並びを維持 -->
       <div class="ft">
-        <!-- 目立つ位置に移動：スマホでも押しやすい -->
-        <button id="btnSample" class="primary" title="入力例で自動入力します">入力例で一気に進める</button>
-
-        <input id="freeInput" class="input" placeholder="自由入力（例：優先は遅刻ゼロ、件数は最大10件）" />
-
-        <button id="btnVoice" class="voice" title="音声で入力します">🎤 音声</button>
-        <button id="btnSend" class="primary" title="入力を送信します">送信</button>
+        <div class="ft-row">
+          <button id="btnSample" class="primary" style="flex:1">入力例で一気に進める</button>
+          <button id="btnVoice" class="voice" style="width:120px">🎤 音声</button>
+        </div>
+        <div class="ft-row">
+          <input id="freeInput" class="input" placeholder="自由入力（例：優先は遅刻ゼロ、件数は最大10件）" />
+          <button id="btnSend" class="primary" style="width:96px">送信</button>
+        </div>
       </div>
     </section>
 
@@ -307,12 +334,28 @@
       <div class="bd">
         <div class="card">
           <h3>今回の条件</h3>
-          <div class="kv" id="summaryKV">
-            <div>担当者</div><div class="muted">未設定</div>
-            <div>訪問件数</div><div class="muted">未設定</div>
-            <div>優先</div><div class="muted">未設定</div>
-            <div>制約</div><div class="muted">未設定</div>
-            <div>出発拠点</div><div class="muted">未設定</div>
+
+          <div class="summary-grid" id="summaryGrid">
+            <div class="sum-item">
+              <div class="sum-k">担当者</div>
+              <div class="sum-v muted">未設定</div>
+            </div>
+            <div class="sum-item">
+              <div class="sum-k">出発拠点</div>
+              <div class="sum-v muted">未設定</div>
+            </div>
+            <div class="sum-item">
+              <div class="sum-k">訪問件数</div>
+              <div class="sum-v muted">未設定</div>
+            </div>
+            <div class="sum-item">
+              <div class="sum-k">優先</div>
+              <div class="sum-v muted">未設定</div>
+            </div>
+            <div class="sum-item sum-wide">
+              <div class="sum-k">制約</div>
+              <div class="sum-v muted">未設定</div>
+            </div>
           </div>
         </div>
 
@@ -329,12 +372,6 @@
 </main>
 
 <script>
-  /**
-   * Demo1: Chat-like assistant (Static / No API)
-   * - Button-first to reduce typing friction
-   * - Voice input via Web Speech API (SpeechRecognition)
-   */
-
   const state = {
     step: 0,
     assignee: null,
@@ -351,7 +388,7 @@
   const stepLabel = document.getElementById('stepLabel');
   const statusLabel = document.getElementById('statusLabel');
 
-  const summaryKV = document.getElementById('summaryKV');
+  const summaryGrid = document.getElementById('summaryGrid');
   const outputCard = document.getElementById('outputCard');
   const planTable = document.getElementById('planTable');
   const outputNote = document.getElementById('outputNote');
@@ -425,17 +462,6 @@
     return [...container.querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
   }
 
-  function renderSummary(){
-    const kv = [
-      ['担当者', state.assignee ?? '未設定'],
-      ['訪問件数', state.visitCount ?? '未設定'],
-      ['優先', state.priority ?? '未設定'],
-      ['制約', state.constraints.length ? state.constraints.join(' / ') : '未設定'],
-      ['出発拠点', state.base ?? '未設定'],
-    ];
-    summaryKV.innerHTML = kv.map(([k,v])=>`<div>${k}</div><div class="${v==='未設定'?'muted':''}">${escapeHtml(v)}</div>`).join('');
-  }
-
   function escapeHtml(str){
     return String(str)
       .replaceAll('&','&amp;')
@@ -443,6 +469,37 @@
       .replaceAll('>','&gt;')
       .replaceAll('"','&quot;')
       .replaceAll("'","&#039;");
+  }
+
+  function renderSummary(){
+    const vAssignee = state.assignee ?? '未設定';
+    const vBase = state.base ?? '未設定';
+    const vCount = state.visitCount ?? '未設定';
+    const vPriority = state.priority ?? '未設定';
+    const vConstraints = state.constraints.length ? state.constraints.join(' / ') : '未設定';
+
+    summaryGrid.innerHTML = `
+      <div class="sum-item">
+        <div class="sum-k">担当者</div>
+        <div class="sum-v ${vAssignee==='未設定'?'muted':''}">${escapeHtml(vAssignee)}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-k">出発拠点</div>
+        <div class="sum-v ${vBase==='未設定'?'muted':''}">${escapeHtml(vBase)}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-k">訪問件数</div>
+        <div class="sum-v ${vCount==='未設定'?'muted':''}">${escapeHtml(vCount)}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-k">優先</div>
+        <div class="sum-v ${vPriority==='未設定'?'muted':''}">${escapeHtml(vPriority)}</div>
+      </div>
+      <div class="sum-item sum-wide">
+        <div class="sum-k">制約</div>
+        <div class="sum-v ${vConstraints==='未設定'?'muted':''}">${escapeHtml(vConstraints)}</div>
+      </div>
+    `;
   }
 
   function resetAll(){
@@ -559,9 +616,8 @@
     addMsg('me', escapeHtml(text));
     state.freeNotes.push(text);
     freeInput.value = '';
-    renderSummary();
 
-    // lightweight parser (demo-friendly)
+    // lightweight parser
     const t = text;
     if(!state.priority && /(遅刻|時間|厳守)/.test(t)) state.priority = '遅刻ゼロ（時間厳守）';
     if(!state.priority && /(移動|最小)/.test(t)) state.priority = '移動時間最小';
@@ -603,9 +659,7 @@
       const window = (i%3===0) ? '午前' : (i%3===1 ? '午後' : '終日');
       arr.push({
         id: `案件${String(i).padStart(2,'0')}`,
-        area,
-        type,
-        difficulty,
+        area, type, difficulty,
         travelMin: travel,
         window,
         note: `${base}→${area} / ${type}`,
@@ -714,7 +768,7 @@
     planTable.innerHTML = header + `<tbody>${rows}</tbody>`;
   }
 
-  // Voice input (Web Speech API)
+  // Voice input
   function setupVoice(){
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SpeechRecognition){
@@ -730,10 +784,10 @@
 
     recognition.onstart = ()=>{
       recognizing = true;
-      btnVoice.textContent = '🎤 聞いています...';
+      btnVoice.textContent = '🎤 聞いています…';
       btnVoice.style.opacity = '0.85';
     };
-    recognition.onerror = (e)=>{
+    recognition.onerror = ()=>{
       recognizing = false;
       btnVoice.textContent = '🎤 音声';
       btnVoice.style.opacity = '1';
@@ -750,7 +804,6 @@
         transcript += event.results[i][0].transcript;
       }
       freeInput.value = transcript.trim();
-      // 最終確定のときは自動送信
       const last = event.results[event.results.length - 1];
       if(last && last.isFinal){
         handleFreeInput();
@@ -766,10 +819,8 @@
     });
   }
 
-  // Sample run: auto fill + auto proceed
   function runSample(){
     resetAll();
-    // Simulate picks by setting state directly and pushing steps
     setTimeout(()=>{ state.assignee='Bさん（中堅）'; renderSummary(); setStep(1); addMsg('me','Bさん（中堅）'); proceed(); }, 350);
     setTimeout(()=>{ state.base='本社（神奈川）'; renderSummary(); setStep(2); addMsg('me','本社（神奈川）'); proceed(); }, 750);
     setTimeout(()=>{ state.visitCount='10件'; renderSummary(); setStep(3); addMsg('me','10件'); proceed(); }, 1150);
@@ -783,13 +834,11 @@
     }, 2100);
   }
 
-  // Events
   btnSend.addEventListener('click', handleFreeInput);
   freeInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleFreeInput(); });
   btnReset.addEventListener('click', resetAll);
   btnSample.addEventListener('click', runSample);
 
-  // Init
   resetAll();
   setupVoice();
 </script>
