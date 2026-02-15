@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>訪問ルート最適化（対話デモ）</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --card:#111c3a;
+      --muted:#93a4c7;
+      --text:#e9efff;
+      --accent:#6ee7ff;
+      --accent2:#a78bfa;
+      --danger:#ff6b6b;
+      --ok:#34d399;
+      --border:rgba(255,255,255,.10);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --radius2:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 10% 0%, rgba(110,231,255,.12), transparent 50%),
+                  radial-gradient(900px 600px at 90% 10%, rgba(167,139,250,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:5;
+      backdrop-filter: blur(10px);
+      background: rgba(11,16,32,.70);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:16px;}
+    .top{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; gap:10px; align-items:center;
+    }
+    .logo{
+      width:40px; height:40px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(110,231,255,.9), rgba(167,139,250,.9));
+      box-shadow: var(--shadow);
+    }
+    .title{
+      line-height:1.2;
+    }
+    .title h1{font-size:16px; margin:0}
+    .title p{margin:2px 0 0; color:var(--muted); font-size:12px}
+    .actions{display:flex; gap:10px; align-items:center}
+    button, .pill{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition: .15s ease;
+      font-weight:600;
+      font-size:13px;
+    }
+    button:hover{transform: translateY(-1px); border-color: rgba(110,231,255,.35)}
+    button:active{transform: translateY(0px)}
+    button.primary{
+      background: linear-gradient(135deg, rgba(110,231,255,.22), rgba(167,139,250,.22));
+      border-color: rgba(110,231,255,.35);
+    }
+    button.danger{
+      background: rgba(255,107,107,.12);
+      border-color: rgba(255,107,107,.35);
+    }
+
+    main .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:14px;
+      padding:16px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    @media (max-width: 980px){
+      main .grid{grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: rgba(15,23,48,.72);
+      border:1px solid var(--border);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height: 640px;
+      display:flex;
+      flex-direction:column;
+    }
+    .panel .hd{
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+    }
+    .panel .hd .sub{color:var(--muted); font-size:12px}
+    .panel .bd{padding:14px; display:flex; flex-direction:column; gap:12px; overflow:auto;}
+    .panel .ft{
+      padding:12px 14px;
+      border-top:1px solid var(--border);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      background: rgba(255,255,255,.03);
+    }
+    .input{
+      flex:1;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      padding:11px 12px;
+      border-radius: 14px;
+      outline:none;
+      font-size:14px;
+    }
+    .muted{color:var(--muted)}
+    .chips{display:flex; flex-wrap:wrap; gap:8px}
+    .chip{
+      padding:9px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      font-size:12.5px;
+      user-select:none;
+      transition: .15s ease;
+      font-weight:600;
+    }
+    .chip:hover{border-color: rgba(110,231,255,.35); transform: translateY(-1px)}
+    .chip:active{transform: translateY(0px)}
+    .chip.selected{
+      border-color: rgba(110,231,255,.45);
+      background: rgba(110,231,255,.14);
+    }
+
+    .msg{
+      display:flex; gap:10px; align-items:flex-start;
+    }
+    .avatar{
+      width:32px; height:32px; border-radius:12px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px;
+      flex:0 0 auto;
+    }
+    .bubble{
+      max-width: 84%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      line-height:1.55;
+      font-size:14px;
+      white-space:pre-wrap;
+    }
+    .msg.me{justify-content:flex-end}
+    .msg.me .bubble{
+      background: rgba(110,231,255,.10);
+      border-color: rgba(110,231,255,.25);
+      max-width: 88%;
+    }
+    .msg.me .avatar{display:none}
+
+    .card{
+      border:1px solid var(--border);
+      background: rgba(17,28,58,.65);
+      border-radius: var(--radius);
+      padding:12px;
+    }
+    .card h3{margin:0 0 8px; font-size:14px}
+    .kv{
+      display:grid;
+      grid-template-columns: 140px 1fr;
+      gap:8px 10px;
+      font-size:13px;
+    }
+    .kv div:nth-child(odd){color:var(--muted)}
+    .hr{height:1px; background: var(--border); margin:12px 0}
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size:12.5px;
+      overflow:hidden;
+      border-radius: 14px;
+    }
+    th, td{
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:10px 10px;
+      text-align:left;
+      vertical-align:top;
+    }
+    th{
+      color: var(--muted);
+      font-weight:700;
+      background: rgba(255,255,255,.04);
+    }
+    tr:last-child td{border-bottom:none}
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 8px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      font-size:11.5px;
+      font-weight:800;
+    }
+    .b-matsu{border-color: rgba(110,231,255,.35); background: rgba(110,231,255,.12)}
+    .b-take{border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.12)}
+    .b-ume{border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.12)}
+    .small{font-size:12px; color:var(--muted)}
+    .hint{
+      border:1px dashed rgba(255,255,255,.20);
+      background: rgba(255,255,255,.03);
+      padding:10px 12px;
+      border-radius: 14px;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <h1>訪問ルート最適化アシスタント（対話デモ）</h1>
+          <p>入力→制約整理→ルート案（松/竹/梅）を即提示（静的デモ / GitHub Pages）</p>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="pill small">Demo1: 対話 → 3案提示</span>
+        <button id="btnSample" class="primary">入力例で一気に進める</button>
+        <button id="btnReset" class="danger">リセット</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <!-- Chat -->
+    <section class="panel" aria-label="対話パネル">
+      <div class="hd">
+        <div>
+          <div style="font-weight:800">対話</div>
+          <div class="sub">選択肢を押すだけで進みます（手入力もOK）</div>
+        </div>
+        <div class="small muted" id="stepLabel">Step 0/5</div>
+      </div>
+
+      <div class="bd" id="chat"></div>
+
+      <div class="ft">
+        <input id="freeInput" class="input" placeholder="自由入力（例：優先は遅刻ゼロ、件数は最大10件）" />
+        <button id="btnSend" class="primary">送信</button>
+      </div>
+    </section>
+
+    <!-- Summary / Output -->
+    <aside class="panel" aria-label="結果パネル">
+      <div class="hd">
+        <div>
+          <div style="font-weight:800">入力サマリー & 出力</div>
+          <div class="sub">決裁者向け：何が決まって、何が出るか</div>
+        </div>
+        <div class="small muted" id="statusLabel">未完了</div>
+      </div>
+      <div class="bd">
+        <div class="card">
+          <h3>今回の条件</h3>
+          <div class="kv" id="summaryKV">
+            <div>担当者</div><div class="muted">未設定</div>
+            <div>訪問件数</div><div class="muted">未設定</div>
+            <div>優先</div><div class="muted">未設定</div>
+            <div>制約</div><div class="muted">未設定</div>
+            <div>出発拠点</div><div class="muted">未設定</div>
+          </div>
+          <div class="hr"></div>
+          <div class="hint">
+            このデモは「AIの賢さ」を見せるより、<b>運用導線（入力→候補→比較）</b>を体感してもらう目的です。<br/>
+            実データ投入や地図連携（Demo2）は次段階でOK。
+          </div>
+        </div>
+
+        <div class="card" id="outputCard" style="display:none;">
+          <h3>ルート案（松 / 竹 / 梅）</h3>
+          <div class="small muted" id="outputNote" style="margin-bottom:10px;"></div>
+          <div style="overflow:auto;">
+            <table id="planTable"></table>
+          </div>
+        </div>
+
+        <div class="card" id="ctaCard">
+          <h3>次に見せたい体験</h3>
+          <div class="small">
+            Demo2（地図で可視化）に進むと、<b>ムダ移動・偏り・根拠</b>がさらに直感的になります。
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+/**
+ * Demo1: Chat-like assistant
+ * - Static only (no API)
+ * - Button-first to reduce typing friction
+ * - Outputs 3 plans (松竹梅) as a table
+ */
+
+const state = {
+  step: 0,
+  // collected inputs
+  assignee: null,        // 担当者
+  base: null,            // 出発拠点
+  visitCount: null,      // 訪問件数
+  priority: null,        // 優先
+  constraints: [],       // 制約（複数）
+  freeNotes: [],         // 自由入力メモ
+};
+
+const STEPS_TOTAL = 5;
+
+const chatEl = document.getElementById('chat');
+const stepLabel = document.getElementById('stepLabel');
+const statusLabel = document.getElementById('statusLabel');
+
+const summaryKV = document.getElementById('summaryKV');
+const outputCard = document.getElementById('outputCard');
+const planTable = document.getElementById('planTable');
+const outputNote = document.getElementById('outputNote');
+
+const freeInput = document.getElementById('freeInput');
+const btnSend = document.getElementById('btnSend');
+const btnReset = document.getElementById('btnReset');
+const btnSample = document.getElementById('btnSample');
+
+function setStep(n){
+  state.step = n;
+  stepLabel.textContent = `Step ${Math.min(state.step, STEPS_TOTAL)}/${STEPS_TOTAL}`;
+  statusLabel.textContent = (state.step >= STEPS_TOTAL) ? '出力済み' : '入力中';
+  renderSummary();
+}
+
+function addMsg(role, text){
+  const row = document.createElement('div');
+  row.className = 'msg ' + (role === 'me' ? 'me' : 'bot');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = role === 'me' ? '' : 'AI';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = text;
+
+  if(role !== 'me') row.appendChild(avatar);
+  row.appendChild(bubble);
+
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addChips(options, onPick, allowMulti=false){
+  const wrap = document.createElement('div');
+  wrap.className = 'chips';
+
+  options.forEach(opt=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = opt.label ?? opt;
+    chip.dataset.value = opt.value ?? opt;
+
+    chip.addEventListener('click', ()=>{
+      if(allowMulti){
+        chip.classList.toggle('selected');
+        onPick(getSelectedValues(wrap));
+      }else{
+        // single pick
+        [...wrap.querySelectorAll('.chip')].forEach(c=>c.classList.remove('selected'));
+        chip.classList.add('selected');
+        onPick(chip.dataset.value);
+        // auto-advance after single selection
+        setTimeout(()=>{ proceed(); }, 120);
+      }
+    });
+
+    wrap.appendChild(chip);
+  });
+
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return wrap;
+}
+
+function getSelectedValues(container){
+  return [...container.querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
+}
+
+function renderSummary(){
+  const kv = [
+    ['担当者', state.assignee ?? '未設定'],
+    ['訪問件数', state.visitCount ?? '未設定'],
+    ['優先', state.priority ?? '未設定'],
+    ['制約', state.constraints.length ? state.constraints.join(' / ') : '未設定'],
+    ['出発拠点', state.base ?? '未設定'],
+  ];
+  summaryKV.innerHTML = kv.map(([k,v])=>`<div>${k}</div><div class="${v==='未設定'?'muted':''}">${escapeHtml(v)}</div>`).join('');
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function resetAll(){
+  state.step = 0;
+  state.assignee = null;
+  state.base = null;
+  state.visitCount = null;
+  state.priority = null;
+  state.constraints = [];
+  state.freeNotes = [];
+
+  chatEl.innerHTML = '';
+  outputCard.style.display = 'none';
+  planTable.innerHTML = '';
+  outputNote.textContent = '';
+  setStep(0);
+
+  boot();
+}
+
+function boot(){
+  addMsg('bot',
+    `こんにちは。<b>訪問ルート案（松/竹/梅）</b>を作るために、必要条件だけ聞きます。<br/>
+     まず、<b>今回の担当者（またはチーム）</b>は誰ですか？`
+  );
+  addChips(
+    [
+      {label:'Aさん（新人）', value:'Aさん（新人）'},
+      {label:'Bさん（中堅）', value:'Bさん（中堅）'},
+      {label:'Cさん（ベテラン）', value:'Cさん（ベテラン）'},
+      {label:'2名体制（A+B）', value:'2名体制（A+B）'},
+    ],
+    (val)=>{ state.assignee = val; setStep(1); }
+  );
+}
+
+function proceed(){
+  // Drives the dialogue according to step
+  if(state.step === 1){
+    addMsg('bot',
+      `OK。出発拠点（車庫/事務所）はどこですか？<br/>
+       ※デモでは仮名でOKです。`
+    );
+    addChips(
+      [
+        {label:'本社（神奈川）', value:'本社（神奈川）'},
+        {label:'支店（東京）', value:'支店（東京）'},
+        {label:'現場近くで直行', value:'現場近くで直行'},
+      ],
+      (val)=>{ state.base = val; setStep(2); }
+    );
+    return;
+  }
+
+  if(state.step === 2){
+    addMsg('bot',
+      `次に<b>訪問件数</b>は何件くらいですか？（上限のイメージでOK）`
+    );
+    addChips(
+      [
+        {label:'6件', value:'6件'},
+        {label:'8件', value:'8件'},
+        {label:'10件', value:'10件'},
+        {label:'12件', value:'12件'},
+      ],
+      (val)=>{ state.visitCount = val; setStep(3); }
+    );
+    return;
+  }
+
+  if(state.step === 3){
+    addMsg('bot',
+      `優先順位を1つ選んでください。<b>ここでルートの組み方が変わります。</b>`
+    );
+    addChips(
+      [
+        {label:'遅刻ゼロ（時間厳守）', value:'遅刻ゼロ（時間厳守）'},
+        {label:'移動時間最小', value:'移動時間最小'},
+        {label:'クレーム/難案件を先に', value:'クレーム/難案件を先に'},
+        {label:'売上/単価優先', value:'売上/単価優先'},
+      ],
+      (val)=>{ state.priority = val; setStep(4); }
+    );
+    return;
+  }
+
+  if(state.step === 4){
+    addMsg('bot',
+      `最後に制約を選んでください（複数OK）。選び終えたら<b>「出力する」</b>を押してください。`
+    );
+    const chipWrap = addChips(
+      [
+        {label:'Aさんは難案件NG', value:'Aさんは難案件NG'},
+        {label:'午後は渋滞が増える', value:'午後は渋滞が増える'},
+        {label:'同エリアまとめたい', value:'同エリアまとめたい'},
+        {label:'初回訪問を優先', value:'初回訪問を優先'},
+        {label:'作業時間が読めない案件あり', value:'作業時間が読めない案件あり'},
+      ],
+      (vals)=>{ state.constraints = vals; renderSummary(); },
+      true
+    );
+
+    const btn = document.createElement('button');
+    btn.className = 'primary';
+    btn.textContent = '出力する（松/竹/梅）';
+    btn.style.marginTop = '10px';
+    btn.addEventListener('click', ()=>{
+      state.constraints = getSelectedValues(chipWrap);
+      setStep(5);
+      addMsg('me', '出力して');
+      generatePlans();
+    });
+    chatEl.appendChild(btn);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return;
+  }
+}
+
+function handleFreeInput(){
+  const text = freeInput.value.trim();
+  if(!text) return;
+  addMsg('me', escapeHtml(text));
+  state.freeNotes.push(text);
+  freeInput.value = '';
+  renderSummary();
+
+  // lightweight parser to set fields if user types keywords (demo-friendly)
+  // This is intentionally simple; real version would be more robust.
+  const t = text;
+  if(!state.priority && /(遅刻|時間|厳守)/.test(t)) state.priority = '遅刻ゼロ（時間厳守）';
+  if(!state.priority && /(移動|最小)/.test(t)) state.priority = '移動時間最小';
+  const m = t.match(/(\d{1,2})\s*件/);
+  if(!state.visitCount && m) state.visitCount = `${m[1]}件`;
+  if(!state.assignee && /(A|B|C)さん/.test(t)){
+    const mm = t.match(/(Aさん|Bさん|Cさん)/);
+    if(mm) state.assignee = mm[1];
+  }
+  renderSummary();
+
+  // If user typed something early, gently continue
+  if(state.step === 0){
+    addMsg('bot', 'ありがとうございます。まずは担当者を選ぶとスムーズです。');
+  }else{
+    addMsg('bot', 'メモしました。必要条件が揃ったら「出力する」を押せます。');
+  }
+}
+
+function generatePlans(){
+  addMsg('bot',
+    `了解です。条件をもとに、<b>松（品質重視）/ 竹（バランス）/ 梅（スピード）</b>の3案を出します。<br/>
+     ※デモなので、出力はルールベースで作っています（本番はデータ連携で精度が上がります）。`
+  );
+
+  // Dummy visit list
+  const visits = makeDummyVisits(parseInt((state.visitCount||'8').replace('件',''),10) || 8);
+
+  // Create 3 strategies
+  const plans = [
+    { tier:'松', badge:'b-matsu', concept:'遅刻ゼロ・難案件先・余裕バッファ', order: orderMatsu(visits) },
+    { tier:'竹', badge:'b-take', concept:'移動と難易度のバランス', order: orderTake(visits) },
+    { tier:'梅', badge:'b-ume', concept:'近い順に回して最短で終える', order: orderUme(visits) },
+  ];
+
+  renderPlanTable(plans);
+}
+
+function makeDummyVisits(n){
+  const areas = ['西', '東', '南', '北', '中央'];
+  const types = ['定期点検', '緊急対応', '初回訪問', 'クレーム対応', '見積/提案'];
+  const base = state.base || '本社';
+  const arr = [];
+  for(let i=1;i<=n;i++){
+    const area = areas[(i*7) % areas.length];
+    const type = types[(i*5) % types.length];
+    const difficulty = ['低','中','高'][(i*3) % 3];
+    // pseudo travel minutes from base (just for demo)
+    const travel = 10 + ((i*13) % 45); // 10-54
+    // time window hint
+    const window = (i%3===0) ? '午前' : (i%3===1 ? '午後' : '終日');
+    arr.push({
+      id: `案件${String(i).padStart(2,'0')}`,
+      area,
+      type,
+      difficulty,
+      travelMin: travel,
+      window,
+      note: `${base}→${area}エリア / ${type}`,
+    });
+  }
+  return arr;
+}
+
+function orderMatsu(visits){
+  // prioritize strict time + hard cases earlier, add buffer by spacing high difficulty
+  const v = [...visits];
+  v.sort((a,b)=>{
+    const aw = scoreDifficulty(a.difficulty) + scoreType(a.type) + scoreWindowMatsu(a.window) - a.travelMin*0.02;
+    const bw = scoreDifficulty(b.difficulty) + scoreType(b.type) + scoreWindowMatsu(b.window) - b.travelMin*0.02;
+    return bw - aw;
+  });
+  // spacing: move "高" every other if possible
+  const highs = v.filter(x=>x.difficulty==='高');
+  const rest = v.filter(x=>x.difficulty!=='高');
+  const out = [];
+  while(highs.length || rest.length){
+    if(highs.length) out.push(highs.shift());
+    if(rest.length) out.push(rest.shift());
+  }
+  return out;
+}
+
+function orderTake(visits){
+  // balance: group by area, but bump urgent/complaint
+  const v = [...visits];
+  v.sort((a,b)=>{
+    const aw = scoreType(a.type)*2 + scoreDifficulty(a.difficulty) - a.travelMin*0.03 + scoreAreaGroup(a.area);
+    const bw = scoreType(b.type)*2 + scoreDifficulty(b.difficulty) - b.travelMin*0.03 + scoreAreaGroup(b.area);
+    return bw - aw;
+  });
+  return v;
+}
+
+function orderUme(visits){
+  // fast: nearest first
+  const v = [...visits];
+  v.sort((a,b)=>a.travelMin - b.travelMin);
+  return v;
+}
+
+function scoreDifficulty(d){
+  if(d==='高') return 3;
+  if(d==='中') return 2;
+  return 1;
+}
+function scoreType(t){
+  // high priority types
+  if(t==='クレーム対応') return 4;
+  if(t==='緊急対応') return 3;
+  if(t==='初回訪問') return 2;
+  return 1;
+}
+function scoreWindowMatsu(w){
+  // matu: prefer morning fixed
+  if(w==='午前') return 2.5;
+  if(w==='午後') return 1.2;
+  return 1.0;
+}
+function scoreAreaGroup(a){
+  // mild preference for central grouping
+  if(a==='中央') return 1.2;
+  return 1.0;
+}
+
+function renderPlanTable(plans){
+  outputCard.style.display = 'block';
+
+  const note = [
+    `担当者: ${state.assignee ?? '未設定'}`,
+    `拠点: ${state.base ?? '未設定'}`,
+    `件数: ${state.visitCount ?? '未設定'}`,
+    `優先: ${state.priority ?? '未設定'}`,
+    `制約: ${state.constraints.length ? state.constraints.join(' / ') : 'なし'}`,
+    state.freeNotes.length ? `メモ: ${state.freeNotes.slice(-2).join(' / ')}` : null
+  ].filter(Boolean).join('  ｜  ');
+  outputNote.textContent = note;
+
+  // Build table: rows = (tier x top K)
+  const K = Math.min(8, plans[0].order.length);
+  const header = `
+    <thead>
+      <tr>
+        <th style="width:92px;">案</th>
+        <th>コンセプト</th>
+        <th style="width:110px;">先頭の訪問</th>
+        <th style="width:90px;">難易度</th>
+        <th style="width:90px;">目安移動</th>
+        <th>並び（上位${K}件）</th>
+      </tr>
+    </thead>
+  `;
+
+  const rows = plans.map(p=>{
+    const top = p.order[0];
+    const list = p.order.slice(0,K).map(x=>`${x.id}（${x.area}/${x.type}）`).join(' → ');
+    const totalTravel = p.order.slice(0,K).reduce((s,x)=>s+x.travelMin,0);
+    return `
+      <tr>
+        <td><span class="badge ${p.badge}">${p.tier}</span></td>
+        <td>${escapeHtml(p.concept)}</td>
+        <td>${escapeHtml(top.id)}<div class="small muted">${escapeHtml(top.window)} / ${escapeHtml(top.area)}</div></td>
+        <td>${escapeHtml(top.difficulty)}</td>
+        <td>${Math.round(totalTravel)}分</td>
+        <td>${escapeHtml(list)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  planTable.innerHTML = header + `<tbody>${rows}</tbody>`;
+
+  addMsg('bot',
+    `出力しました。次は「この3案をどう比較して意思決定
