@@ -6,74 +6,84 @@
   <title>訪問ルート最適化（対話デモ）</title>
   <style>
     :root{
-      --bg:#0b1020;
-      --panel:#0f1730;
-      --card:#111c3a;
-      --muted:#93a4c7;
-      --text:#e9efff;
-      --accent:#6ee7ff;
-      --accent2:#a78bfa;
-      --danger:#ff6b6b;
-      --ok:#34d399;
-      --border:rgba(255,255,255,.10);
-      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --card:#ffffff;
+      --muted:#5b6475;
+      --text:#111827;
+      --accent:#2563eb;
+      --accent2:#7c3aed;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --border:rgba(17,24,39,.10);
+      --shadow:0 10px 26px rgba(17,24,39,.10);
       --radius:16px;
-      --radius2:22px;
+      --radius2:18px;
+      --chip:#f3f4f6;
+      --chipHover:#e5e7eb;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      background: radial-gradient(1200px 700px at 10% 0%, rgba(110,231,255,.12), transparent 50%),
-                  radial-gradient(900px 600px at 90% 10%, rgba(167,139,250,.12), transparent 55%),
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans";
+      background: radial-gradient(1000px 600px at 10% 0%, rgba(37,99,235,.10), transparent 55%),
+                  radial-gradient(900px 600px at 90% 10%, rgba(124,58,237,.10), transparent 55%),
                   var(--bg);
       color:var(--text);
     }
     header{
       position:sticky; top:0; z-index:5;
       backdrop-filter: blur(10px);
-      background: rgba(11,16,32,.70);
+      background: rgba(246,247,251,.82);
       border-bottom:1px solid var(--border);
     }
-    .wrap{max-width:1100px; margin:0 auto; padding:16px;}
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px;}
     .top{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
       flex-wrap:wrap;
     }
-    .brand{
-      display:flex; gap:10px; align-items:center;
-    }
+    .brand{display:flex; gap:10px; align-items:center;}
     .logo{
       width:40px; height:40px; border-radius:12px;
-      background: linear-gradient(135deg, rgba(110,231,255,.9), rgba(167,139,250,.9));
+      background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(124,58,237,.95));
       box-shadow: var(--shadow);
     }
-    .title{
-      line-height:1.2;
-    }
+    .title{line-height:1.25}
     .title h1{font-size:16px; margin:0}
     .title p{margin:2px 0 0; color:var(--muted); font-size:12px}
-    .actions{display:flex; gap:10px; align-items:center}
+
     button, .pill{
       border:1px solid var(--border);
-      background: rgba(255,255,255,.06);
+      background: #fff;
       color:var(--text);
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
       transition: .15s ease;
-      font-weight:600;
+      font-weight:700;
       font-size:13px;
+      box-shadow: 0 1px 0 rgba(17,24,39,.04);
     }
-    button:hover{transform: translateY(-1px); border-color: rgba(110,231,255,.35)}
+    button:hover{transform: translateY(-1px); border-color: rgba(37,99,235,.25)}
     button:active{transform: translateY(0px)}
     button.primary{
-      background: linear-gradient(135deg, rgba(110,231,255,.22), rgba(167,139,250,.22));
-      border-color: rgba(110,231,255,.35);
+      background: linear-gradient(135deg, rgba(37,99,235,.10), rgba(124,58,237,.10));
+      border-color: rgba(37,99,235,.25);
+      color: #0b1b4a;
     }
     button.danger{
-      background: rgba(255,107,107,.12);
-      border-color: rgba(255,107,107,.35);
+      background: rgba(220,38,38,.08);
+      border-color: rgba(220,38,38,.22);
+      color:#7f1d1d;
+    }
+    button.voice{
+      background: rgba(22,163,74,.08);
+      border-color: rgba(22,163,74,.22);
+      color:#14532d;
+      white-space:nowrap;
+    }
+    button.ghost{
+      background: #fff;
     }
 
     main .grid{
@@ -86,10 +96,11 @@
     }
     @media (max-width: 980px){
       main .grid{grid-template-columns: 1fr; }
+      header .title p{display:none;}
     }
 
     .panel{
-      background: rgba(15,23,48,.72);
+      background: var(--panel);
       border:1px solid var(--border);
       border-radius: var(--radius2);
       box-shadow: var(--shadow);
@@ -102,7 +113,7 @@
       padding:14px 14px 12px;
       border-bottom:1px solid var(--border);
       display:flex; justify-content:space-between; align-items:center; gap:10px;
-      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+      background: linear-gradient(180deg, rgba(17,24,39,.02), transparent);
     }
     .panel .hd .sub{color:var(--muted); font-size:12px}
     .panel .bd{padding:14px; display:flex; flex-direction:column; gap:12px; overflow:auto;}
@@ -112,12 +123,15 @@
       display:flex;
       gap:10px;
       align-items:center;
-      background: rgba(255,255,255,.03);
+      background: rgba(17,24,39,.02);
+      position: sticky;
+      bottom: 0;
     }
+
     .input{
       flex:1;
       border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
+      background: #fff;
       color:var(--text);
       padding:11px 12px;
       border-radius: 14px;
@@ -125,59 +139,62 @@
       font-size:14px;
     }
     .muted{color:var(--muted)}
+    .small{font-size:12px; color:var(--muted)}
+
     .chips{display:flex; flex-wrap:wrap; gap:8px}
     .chip{
-      padding:9px 10px;
+      padding:10px 12px;
       border-radius: 999px;
       border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      background: var(--chip);
       cursor:pointer;
-      font-size:12.5px;
+      font-size:13px;
       user-select:none;
       transition: .15s ease;
-      font-weight:600;
+      font-weight:700;
     }
-    .chip:hover{border-color: rgba(110,231,255,.35); transform: translateY(-1px)}
+    .chip:hover{background:var(--chipHover); transform: translateY(-1px)}
     .chip:active{transform: translateY(0px)}
     .chip.selected{
-      border-color: rgba(110,231,255,.45);
-      background: rgba(110,231,255,.14);
+      border-color: rgba(37,99,235,.28);
+      background: rgba(37,99,235,.10);
     }
 
-    .msg{
-      display:flex; gap:10px; align-items:flex-start;
-    }
+    .msg{display:flex; gap:10px; align-items:flex-start;}
     .avatar{
       width:32px; height:32px; border-radius:12px;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--border);
+      background: rgba(37,99,235,.10);
+      border:1px solid rgba(37,99,235,.18);
       display:flex; align-items:center; justify-content:center;
       font-size:14px;
       flex:0 0 auto;
+      color:#1d4ed8;
+      font-weight:900;
     }
     .bubble{
-      max-width: 84%;
+      max-width: 86%;
       padding:12px 12px;
       border-radius: 14px;
       border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      background: #fff;
       line-height:1.55;
       font-size:14px;
       white-space:pre-wrap;
     }
     .msg.me{justify-content:flex-end}
     .msg.me .bubble{
-      background: rgba(110,231,255,.10);
-      border-color: rgba(110,231,255,.25);
-      max-width: 88%;
+      background: rgba(37,99,235,.08);
+      border-color: rgba(37,99,235,.18);
+      max-width: 90%;
     }
     .msg.me .avatar{display:none}
 
     .card{
       border:1px solid var(--border);
-      background: rgba(17,28,58,.65);
+      background: var(--card);
       border-radius: var(--radius);
       padding:12px;
+      box-shadow: 0 8px 18px rgba(17,24,39,.06);
     }
     .card h3{margin:0 0 8px; font-size:14px}
     .kv{
@@ -188,46 +205,50 @@
     }
     .kv div:nth-child(odd){color:var(--muted)}
     .hr{height:1px; background: var(--border); margin:12px 0}
+
     table{
       width:100%;
       border-collapse: collapse;
       font-size:12.5px;
       overflow:hidden;
       border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
     }
     th, td{
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom:1px solid rgba(17,24,39,.06);
       padding:10px 10px;
       text-align:left;
       vertical-align:top;
     }
     th{
       color: var(--muted);
-      font-weight:700;
-      background: rgba(255,255,255,.04);
+      font-weight:800;
+      background: rgba(17,24,39,.03);
     }
     tr:last-child td{border-bottom:none}
+
     .badge{
       display:inline-flex; align-items:center; gap:6px;
-      padding:4px 8px;
+      padding:5px 9px;
       border-radius: 999px;
       border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      background: rgba(17,24,39,.03);
       font-size:11.5px;
-      font-weight:800;
+      font-weight:900;
     }
-    .b-matsu{border-color: rgba(110,231,255,.35); background: rgba(110,231,255,.12)}
-    .b-take{border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.12)}
-    .b-ume{border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.12)}
-    .small{font-size:12px; color:var(--muted)}
-    .hint{
-      border:1px dashed rgba(255,255,255,.20);
-      background: rgba(255,255,255,.03);
-      padding:10px 12px;
-      border-radius: 14px;
-      color: var(--muted);
-      font-size:12px;
-      line-height:1.6;
+    .b-matsu{border-color: rgba(37,99,235,.25); background: rgba(37,99,235,.10); color:#1d4ed8}
+    .b-take{border-color: rgba(124,58,237,.25); background: rgba(124,58,237,.10); color:#6d28d9}
+    .b-ume{border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.10); color:#166534}
+
+    /* Mobile ergonomics */
+    @media (max-width: 520px){
+      .panel{min-height: 560px;}
+      .panel .bd{padding:12px}
+      .panel .ft{gap:8px; padding:10px}
+      button, .pill{padding:11px 12px}
+      .chip{padding:11px 12px}
+      .kv{grid-template-columns: 110px 1fr;}
     }
   </style>
 </head>
@@ -239,12 +260,10 @@
         <div class="logo" aria-hidden="true"></div>
         <div class="title">
           <h1>訪問ルート最適化アシスタント（対話デモ）</h1>
-          <p>入力→制約整理→ルート案（松/竹/梅）を即提示（静的デモ / GitHub Pages）</p>
+          <p>選択肢中心で入力 → ルート案（松/竹/梅）を自動提示</p>
         </div>
       </div>
-      <div class="actions">
-        <span class="pill small">Demo1: 対話 → 3案提示</span>
-        <button id="btnSample" class="primary">入力例で一気に進める</button>
+      <div class="actions" style="display:flex; gap:10px; align-items:center;">
         <button id="btnReset" class="danger">リセット</button>
       </div>
     </div>
@@ -257,8 +276,8 @@
     <section class="panel" aria-label="対話パネル">
       <div class="hd">
         <div>
-          <div style="font-weight:800">対話</div>
-          <div class="sub">選択肢を押すだけで進みます（手入力もOK）</div>
+          <div style="font-weight:900">対話</div>
+          <div class="sub">選択肢を押して進める / 自由入力・音声入力も可能</div>
         </div>
         <div class="small muted" id="stepLabel">Step 0/5</div>
       </div>
@@ -266,8 +285,13 @@
       <div class="bd" id="chat"></div>
 
       <div class="ft">
+        <!-- 目立つ位置に移動：スマホでも押しやすい -->
+        <button id="btnSample" class="primary" title="入力例で自動入力します">入力例で一気に進める</button>
+
         <input id="freeInput" class="input" placeholder="自由入力（例：優先は遅刻ゼロ、件数は最大10件）" />
-        <button id="btnSend" class="primary">送信</button>
+
+        <button id="btnVoice" class="voice" title="音声で入力します">🎤 音声</button>
+        <button id="btnSend" class="primary" title="入力を送信します">送信</button>
       </div>
     </section>
 
@@ -275,10 +299,10 @@
     <aside class="panel" aria-label="結果パネル">
       <div class="hd">
         <div>
-          <div style="font-weight:800">入力サマリー & 出力</div>
-          <div class="sub">決裁者向け：何が決まって、何が出るか</div>
+          <div style="font-weight:900">入力サマリー & 出力</div>
+          <div class="sub">条件が揃ったら「出力する」で3案を表示します</div>
         </div>
-        <div class="small muted" id="statusLabel">未完了</div>
+        <div class="small muted" id="statusLabel">入力中</div>
       </div>
       <div class="bd">
         <div class="card">
@@ -290,11 +314,6 @@
             <div>制約</div><div class="muted">未設定</div>
             <div>出発拠点</div><div class="muted">未設定</div>
           </div>
-          <div class="hr"></div>
-          <div class="hint">
-            このデモは「AIの賢さ」を見せるより、<b>運用導線（入力→候補→比較）</b>を体感してもらう目的です。<br/>
-            実データ投入や地図連携（Demo2）は次段階でOK。
-          </div>
         </div>
 
         <div class="card" id="outputCard" style="display:none;">
@@ -304,431 +323,475 @@
             <table id="planTable"></table>
           </div>
         </div>
-
-        <div class="card" id="ctaCard">
-          <h3>次に見せたい体験</h3>
-          <div class="small">
-            Demo2（地図で可視化）に進むと、<b>ムダ移動・偏り・根拠</b>がさらに直感的になります。
-          </div>
-        </div>
       </div>
     </aside>
   </div>
 </main>
 
 <script>
-/**
- * Demo1: Chat-like assistant
- * - Static only (no API)
- * - Button-first to reduce typing friction
- * - Outputs 3 plans (松竹梅) as a table
- */
+  /**
+   * Demo1: Chat-like assistant (Static / No API)
+   * - Button-first to reduce typing friction
+   * - Voice input via Web Speech API (SpeechRecognition)
+   */
 
-const state = {
-  step: 0,
-  // collected inputs
-  assignee: null,        // 担当者
-  base: null,            // 出発拠点
-  visitCount: null,      // 訪問件数
-  priority: null,        // 優先
-  constraints: [],       // 制約（複数）
-  freeNotes: [],         // 自由入力メモ
-};
+  const state = {
+    step: 0,
+    assignee: null,
+    base: null,
+    visitCount: null,
+    priority: null,
+    constraints: [],
+    freeNotes: [],
+  };
 
-const STEPS_TOTAL = 5;
+  const STEPS_TOTAL = 5;
 
-const chatEl = document.getElementById('chat');
-const stepLabel = document.getElementById('stepLabel');
-const statusLabel = document.getElementById('statusLabel');
+  const chatEl = document.getElementById('chat');
+  const stepLabel = document.getElementById('stepLabel');
+  const statusLabel = document.getElementById('statusLabel');
 
-const summaryKV = document.getElementById('summaryKV');
-const outputCard = document.getElementById('outputCard');
-const planTable = document.getElementById('planTable');
-const outputNote = document.getElementById('outputNote');
+  const summaryKV = document.getElementById('summaryKV');
+  const outputCard = document.getElementById('outputCard');
+  const planTable = document.getElementById('planTable');
+  const outputNote = document.getElementById('outputNote');
 
-const freeInput = document.getElementById('freeInput');
-const btnSend = document.getElementById('btnSend');
-const btnReset = document.getElementById('btnReset');
-const btnSample = document.getElementById('btnSample');
+  const freeInput = document.getElementById('freeInput');
+  const btnSend = document.getElementById('btnSend');
+  const btnReset = document.getElementById('btnReset');
+  const btnSample = document.getElementById('btnSample');
+  const btnVoice = document.getElementById('btnVoice');
 
-function setStep(n){
-  state.step = n;
-  stepLabel.textContent = `Step ${Math.min(state.step, STEPS_TOTAL)}/${STEPS_TOTAL}`;
-  statusLabel.textContent = (state.step >= STEPS_TOTAL) ? '出力済み' : '入力中';
-  renderSummary();
-}
+  let recognizing = false;
+  let recognition = null;
 
-function addMsg(role, text){
-  const row = document.createElement('div');
-  row.className = 'msg ' + (role === 'me' ? 'me' : 'bot');
-
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar';
-  avatar.textContent = role === 'me' ? '' : 'AI';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.innerHTML = text;
-
-  if(role !== 'me') row.appendChild(avatar);
-  row.appendChild(bubble);
-
-  chatEl.appendChild(row);
-  chatEl.scrollTop = chatEl.scrollHeight;
-}
-
-function addChips(options, onPick, allowMulti=false){
-  const wrap = document.createElement('div');
-  wrap.className = 'chips';
-
-  options.forEach(opt=>{
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.textContent = opt.label ?? opt;
-    chip.dataset.value = opt.value ?? opt;
-
-    chip.addEventListener('click', ()=>{
-      if(allowMulti){
-        chip.classList.toggle('selected');
-        onPick(getSelectedValues(wrap));
-      }else{
-        // single pick
-        [...wrap.querySelectorAll('.chip')].forEach(c=>c.classList.remove('selected'));
-        chip.classList.add('selected');
-        onPick(chip.dataset.value);
-        // auto-advance after single selection
-        setTimeout(()=>{ proceed(); }, 120);
-      }
-    });
-
-    wrap.appendChild(chip);
-  });
-
-  chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
-  return wrap;
-}
-
-function getSelectedValues(container){
-  return [...container.querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
-}
-
-function renderSummary(){
-  const kv = [
-    ['担当者', state.assignee ?? '未設定'],
-    ['訪問件数', state.visitCount ?? '未設定'],
-    ['優先', state.priority ?? '未設定'],
-    ['制約', state.constraints.length ? state.constraints.join(' / ') : '未設定'],
-    ['出発拠点', state.base ?? '未設定'],
-  ];
-  summaryKV.innerHTML = kv.map(([k,v])=>`<div>${k}</div><div class="${v==='未設定'?'muted':''}">${escapeHtml(v)}</div>`).join('');
-}
-
-function escapeHtml(str){
-  return String(str)
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#039;");
-}
-
-function resetAll(){
-  state.step = 0;
-  state.assignee = null;
-  state.base = null;
-  state.visitCount = null;
-  state.priority = null;
-  state.constraints = [];
-  state.freeNotes = [];
-
-  chatEl.innerHTML = '';
-  outputCard.style.display = 'none';
-  planTable.innerHTML = '';
-  outputNote.textContent = '';
-  setStep(0);
-
-  boot();
-}
-
-function boot(){
-  addMsg('bot',
-    `こんにちは。<b>訪問ルート案（松/竹/梅）</b>を作るために、必要条件だけ聞きます。<br/>
-     まず、<b>今回の担当者（またはチーム）</b>は誰ですか？`
-  );
-  addChips(
-    [
-      {label:'Aさん（新人）', value:'Aさん（新人）'},
-      {label:'Bさん（中堅）', value:'Bさん（中堅）'},
-      {label:'Cさん（ベテラン）', value:'Cさん（ベテラン）'},
-      {label:'2名体制（A+B）', value:'2名体制（A+B）'},
-    ],
-    (val)=>{ state.assignee = val; setStep(1); }
-  );
-}
-
-function proceed(){
-  // Drives the dialogue according to step
-  if(state.step === 1){
-    addMsg('bot',
-      `OK。出発拠点（車庫/事務所）はどこですか？<br/>
-       ※デモでは仮名でOKです。`
-    );
-    addChips(
-      [
-        {label:'本社（神奈川）', value:'本社（神奈川）'},
-        {label:'支店（東京）', value:'支店（東京）'},
-        {label:'現場近くで直行', value:'現場近くで直行'},
-      ],
-      (val)=>{ state.base = val; setStep(2); }
-    );
-    return;
+  function setStep(n){
+    state.step = n;
+    stepLabel.textContent = `Step ${Math.min(state.step, STEPS_TOTAL)}/${STEPS_TOTAL}`;
+    statusLabel.textContent = (state.step >= STEPS_TOTAL) ? '出力済み' : '入力中';
+    renderSummary();
   }
 
-  if(state.step === 2){
-    addMsg('bot',
-      `次に<b>訪問件数</b>は何件くらいですか？（上限のイメージでOK）`
-    );
-    addChips(
-      [
-        {label:'6件', value:'6件'},
-        {label:'8件', value:'8件'},
-        {label:'10件', value:'10件'},
-        {label:'12件', value:'12件'},
-      ],
-      (val)=>{ state.visitCount = val; setStep(3); }
-    );
-    return;
-  }
+  function addMsg(role, text){
+    const row = document.createElement('div');
+    row.className = 'msg ' + (role === 'me' ? 'me' : 'bot');
 
-  if(state.step === 3){
-    addMsg('bot',
-      `優先順位を1つ選んでください。<b>ここでルートの組み方が変わります。</b>`
-    );
-    addChips(
-      [
-        {label:'遅刻ゼロ（時間厳守）', value:'遅刻ゼロ（時間厳守）'},
-        {label:'移動時間最小', value:'移動時間最小'},
-        {label:'クレーム/難案件を先に', value:'クレーム/難案件を先に'},
-        {label:'売上/単価優先', value:'売上/単価優先'},
-      ],
-      (val)=>{ state.priority = val; setStep(4); }
-    );
-    return;
-  }
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = role === 'me' ? '' : 'AI';
 
-  if(state.step === 4){
-    addMsg('bot',
-      `最後に制約を選んでください（複数OK）。選び終えたら<b>「出力する」</b>を押してください。`
-    );
-    const chipWrap = addChips(
-      [
-        {label:'Aさんは難案件NG', value:'Aさんは難案件NG'},
-        {label:'午後は渋滞が増える', value:'午後は渋滞が増える'},
-        {label:'同エリアまとめたい', value:'同エリアまとめたい'},
-        {label:'初回訪問を優先', value:'初回訪問を優先'},
-        {label:'作業時間が読めない案件あり', value:'作業時間が読めない案件あり'},
-      ],
-      (vals)=>{ state.constraints = vals; renderSummary(); },
-      true
-    );
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = text;
 
-    const btn = document.createElement('button');
-    btn.className = 'primary';
-    btn.textContent = '出力する（松/竹/梅）';
-    btn.style.marginTop = '10px';
-    btn.addEventListener('click', ()=>{
-      state.constraints = getSelectedValues(chipWrap);
-      setStep(5);
-      addMsg('me', '出力して');
-      generatePlans();
-    });
-    chatEl.appendChild(btn);
+    if(role !== 'me') row.appendChild(avatar);
+    row.appendChild(bubble);
+
+    chatEl.appendChild(row);
     chatEl.scrollTop = chatEl.scrollHeight;
-    return;
   }
-}
 
-function handleFreeInput(){
-  const text = freeInput.value.trim();
-  if(!text) return;
-  addMsg('me', escapeHtml(text));
-  state.freeNotes.push(text);
-  freeInput.value = '';
-  renderSummary();
+  function addChips(options, onPick, allowMulti=false){
+    const wrap = document.createElement('div');
+    wrap.className = 'chips';
 
-  // lightweight parser to set fields if user types keywords (demo-friendly)
-  // This is intentionally simple; real version would be more robust.
-  const t = text;
-  if(!state.priority && /(遅刻|時間|厳守)/.test(t)) state.priority = '遅刻ゼロ（時間厳守）';
-  if(!state.priority && /(移動|最小)/.test(t)) state.priority = '移動時間最小';
-  const m = t.match(/(\d{1,2})\s*件/);
-  if(!state.visitCount && m) state.visitCount = `${m[1]}件`;
-  if(!state.assignee && /(A|B|C)さん/.test(t)){
-    const mm = t.match(/(Aさん|Bさん|Cさん)/);
-    if(mm) state.assignee = mm[1];
+    options.forEach(opt=>{
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.textContent = opt.label ?? opt;
+      chip.dataset.value = opt.value ?? opt;
+
+      chip.addEventListener('click', ()=>{
+        if(allowMulti){
+          chip.classList.toggle('selected');
+          onPick(getSelectedValues(wrap));
+        }else{
+          [...wrap.querySelectorAll('.chip')].forEach(c=>c.classList.remove('selected'));
+          chip.classList.add('selected');
+          onPick(chip.dataset.value);
+          setTimeout(()=>{ proceed(); }, 120);
+        }
+      });
+
+      wrap.appendChild(chip);
+    });
+
+    chatEl.appendChild(wrap);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return wrap;
   }
-  renderSummary();
 
-  // If user typed something early, gently continue
-  if(state.step === 0){
-    addMsg('bot', 'ありがとうございます。まずは担当者を選ぶとスムーズです。');
-  }else{
-    addMsg('bot', 'メモしました。必要条件が揃ったら「出力する」を押せます。');
+  function getSelectedValues(container){
+    return [...container.querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
   }
-}
 
-function generatePlans(){
-  addMsg('bot',
-    `了解です。条件をもとに、<b>松（品質重視）/ 竹（バランス）/ 梅（スピード）</b>の3案を出します。<br/>
-     ※デモなので、出力はルールベースで作っています（本番はデータ連携で精度が上がります）。`
-  );
+  function renderSummary(){
+    const kv = [
+      ['担当者', state.assignee ?? '未設定'],
+      ['訪問件数', state.visitCount ?? '未設定'],
+      ['優先', state.priority ?? '未設定'],
+      ['制約', state.constraints.length ? state.constraints.join(' / ') : '未設定'],
+      ['出発拠点', state.base ?? '未設定'],
+    ];
+    summaryKV.innerHTML = kv.map(([k,v])=>`<div>${k}</div><div class="${v==='未設定'?'muted':''}">${escapeHtml(v)}</div>`).join('');
+  }
 
-  // Dummy visit list
-  const visits = makeDummyVisits(parseInt((state.visitCount||'8').replace('件',''),10) || 8);
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
 
-  // Create 3 strategies
-  const plans = [
-    { tier:'松', badge:'b-matsu', concept:'遅刻ゼロ・難案件先・余裕バッファ', order: orderMatsu(visits) },
-    { tier:'竹', badge:'b-take', concept:'移動と難易度のバランス', order: orderTake(visits) },
-    { tier:'梅', badge:'b-ume', concept:'近い順に回して最短で終える', order: orderUme(visits) },
-  ];
+  function resetAll(){
+    state.step = 0;
+    state.assignee = null;
+    state.base = null;
+    state.visitCount = null;
+    state.priority = null;
+    state.constraints = [];
+    state.freeNotes = [];
 
-  renderPlanTable(plans);
-}
+    chatEl.innerHTML = '';
+    outputCard.style.display = 'none';
+    planTable.innerHTML = '';
+    outputNote.textContent = '';
+    setStep(0);
 
-function makeDummyVisits(n){
-  const areas = ['西', '東', '南', '北', '中央'];
-  const types = ['定期点検', '緊急対応', '初回訪問', 'クレーム対応', '見積/提案'];
-  const base = state.base || '本社';
-  const arr = [];
-  for(let i=1;i<=n;i++){
-    const area = areas[(i*7) % areas.length];
-    const type = types[(i*5) % types.length];
-    const difficulty = ['低','中','高'][(i*3) % 3];
-    // pseudo travel minutes from base (just for demo)
-    const travel = 10 + ((i*13) % 45); // 10-54
-    // time window hint
-    const window = (i%3===0) ? '午前' : (i%3===1 ? '午後' : '終日');
-    arr.push({
-      id: `案件${String(i).padStart(2,'0')}`,
-      area,
-      type,
-      difficulty,
-      travelMin: travel,
-      window,
-      note: `${base}→${area}エリア / ${type}`,
+    boot();
+  }
+
+  function boot(){
+    addMsg('bot',
+      `こんにちは。ルート案（松/竹/梅）を作るために、必要条件だけ確認します。<br/>
+       まず、今回の<b>担当者（またはチーム）</b>は誰ですか？`
+    );
+    addChips(
+      [
+        {label:'Aさん（新人）', value:'Aさん（新人）'},
+        {label:'Bさん（中堅）', value:'Bさん（中堅）'},
+        {label:'Cさん（ベテラン）', value:'Cさん（ベテラン）'},
+        {label:'2名体制（A+B）', value:'2名体制（A+B）'},
+      ],
+      (val)=>{ state.assignee = val; setStep(1); }
+    );
+  }
+
+  function proceed(){
+    if(state.step === 1){
+      addMsg('bot', `出発拠点（車庫/事務所）はどこですか？`);
+      addChips(
+        [
+          {label:'本社（神奈川）', value:'本社（神奈川）'},
+          {label:'支店（東京）', value:'支店（東京）'},
+          {label:'現場近くで直行', value:'現場近くで直行'},
+        ],
+        (val)=>{ state.base = val; setStep(2); }
+      );
+      return;
+    }
+
+    if(state.step === 2){
+      addMsg('bot', `訪問件数は何件くらいですか？（上限のイメージでOK）`);
+      addChips(
+        [
+          {label:'6件', value:'6件'},
+          {label:'8件', value:'8件'},
+          {label:'10件', value:'10件'},
+          {label:'12件', value:'12件'},
+        ],
+        (val)=>{ state.visitCount = val; setStep(3); }
+      );
+      return;
+    }
+
+    if(state.step === 3){
+      addMsg('bot', `優先順位を1つ選んでください。`);
+      addChips(
+        [
+          {label:'遅刻ゼロ（時間厳守）', value:'遅刻ゼロ（時間厳守）'},
+          {label:'移動時間最小', value:'移動時間最小'},
+          {label:'クレーム/難案件を先に', value:'クレーム/難案件を先に'},
+          {label:'売上/単価優先', value:'売上/単価優先'},
+        ],
+        (val)=>{ state.priority = val; setStep(4); }
+      );
+      return;
+    }
+
+    if(state.step === 4){
+      addMsg('bot',
+        `制約を選んでください（複数OK）。選び終えたら<b>「出力する」</b>を押してください。`
+      );
+      const chipWrap = addChips(
+        [
+          {label:'Aさんは難案件NG', value:'Aさんは難案件NG'},
+          {label:'午後は渋滞が増える', value:'午後は渋滞が増える'},
+          {label:'同エリアまとめたい', value:'同エリアまとめたい'},
+          {label:'初回訪問を優先', value:'初回訪問を優先'},
+          {label:'作業時間が読めない案件あり', value:'作業時間が読めない案件あり'},
+        ],
+        (vals)=>{ state.constraints = vals; renderSummary(); },
+        true
+      );
+
+      const btn = document.createElement('button');
+      btn.className = 'primary';
+      btn.textContent = '出力する（松/竹/梅）';
+      btn.style.marginTop = '10px';
+      btn.addEventListener('click', ()=>{
+        state.constraints = getSelectedValues(chipWrap);
+        setStep(5);
+        addMsg('me', '出力して');
+        generatePlans();
+      });
+      chatEl.appendChild(btn);
+      chatEl.scrollTop = chatEl.scrollHeight;
+      return;
+    }
+  }
+
+  function handleFreeInput(){
+    const text = freeInput.value.trim();
+    if(!text) return;
+    addMsg('me', escapeHtml(text));
+    state.freeNotes.push(text);
+    freeInput.value = '';
+    renderSummary();
+
+    // lightweight parser (demo-friendly)
+    const t = text;
+    if(!state.priority && /(遅刻|時間|厳守)/.test(t)) state.priority = '遅刻ゼロ（時間厳守）';
+    if(!state.priority && /(移動|最小)/.test(t)) state.priority = '移動時間最小';
+    const m = t.match(/(\d{1,2})\s*件/);
+    if(!state.visitCount && m) state.visitCount = `${m[1]}件`;
+    if(!state.assignee && /(A|B|C)さん/.test(t)){
+      const mm = t.match(/(Aさん|Bさん|Cさん)/);
+      if(mm) state.assignee = mm[1];
+    }
+    renderSummary();
+
+    addMsg('bot', '承知しました。必要条件を選ぶと、すぐに3案を出せます。');
+  }
+
+  function generatePlans(){
+    addMsg('bot', `了解です。条件をもとに、松（品質）/ 竹（バランス）/ 梅（スピード）の3案を出します。`);
+
+    const visits = makeDummyVisits(parseInt((state.visitCount||'8').replace('件',''),10) || 8);
+
+    const plans = [
+      { tier:'松', badge:'b-matsu', concept:'遅刻ゼロ・難案件先・余裕バッファ', order: orderMatsu(visits) },
+      { tier:'竹', badge:'b-take', concept:'移動と難易度のバランス', order: orderTake(visits) },
+      { tier:'梅', badge:'b-ume', concept:'近い順に回して最短で終える', order: orderUme(visits) },
+    ];
+
+    renderPlanTable(plans);
+  }
+
+  function makeDummyVisits(n){
+    const areas = ['西', '東', '南', '北', '中央'];
+    const types = ['定期点検', '緊急対応', '初回訪問', 'クレーム対応', '見積/提案'];
+    const base = state.base || '本社';
+    const arr = [];
+    for(let i=1;i<=n;i++){
+      const area = areas[(i*7) % areas.length];
+      const type = types[(i*5) % types.length];
+      const difficulty = ['低','中','高'][(i*3) % 3];
+      const travel = 10 + ((i*13) % 45);
+      const window = (i%3===0) ? '午前' : (i%3===1 ? '午後' : '終日');
+      arr.push({
+        id: `案件${String(i).padStart(2,'0')}`,
+        area,
+        type,
+        difficulty,
+        travelMin: travel,
+        window,
+        note: `${base}→${area} / ${type}`,
+      });
+    }
+    return arr;
+  }
+
+  function orderMatsu(visits){
+    const v = [...visits];
+    v.sort((a,b)=>{
+      const aw = scoreDifficulty(a.difficulty) + scoreType(a.type) + scoreWindowMatsu(a.window) - a.travelMin*0.02;
+      const bw = scoreDifficulty(b.difficulty) + scoreType(b.type) + scoreWindowMatsu(b.window) - b.travelMin*0.02;
+      return bw - aw;
+    });
+    const highs = v.filter(x=>x.difficulty==='高');
+    const rest = v.filter(x=>x.difficulty!=='高');
+    const out = [];
+    while(highs.length || rest.length){
+      if(highs.length) out.push(highs.shift());
+      if(rest.length) out.push(rest.shift());
+    }
+    return out;
+  }
+
+  function orderTake(visits){
+    const v = [...visits];
+    v.sort((a,b)=>{
+      const aw = scoreType(a.type)*2 + scoreDifficulty(a.difficulty) - a.travelMin*0.03 + scoreAreaGroup(a.area);
+      const bw = scoreType(b.type)*2 + scoreDifficulty(b.difficulty) - b.travelMin*0.03 + scoreAreaGroup(b.area);
+      return bw - aw;
+    });
+    return v;
+  }
+
+  function orderUme(visits){
+    const v = [...visits];
+    v.sort((a,b)=>a.travelMin - b.travelMin);
+    return v;
+  }
+
+  function scoreDifficulty(d){
+    if(d==='高') return 3;
+    if(d==='中') return 2;
+    return 1;
+  }
+  function scoreType(t){
+    if(t==='クレーム対応') return 4;
+    if(t==='緊急対応') return 3;
+    if(t==='初回訪問') return 2;
+    return 1;
+  }
+  function scoreWindowMatsu(w){
+    if(w==='午前') return 2.5;
+    if(w==='午後') return 1.2;
+    return 1.0;
+  }
+  function scoreAreaGroup(a){
+    if(a==='中央') return 1.2;
+    return 1.0;
+  }
+
+  function renderPlanTable(plans){
+    outputCard.style.display = 'block';
+
+    const note = [
+      `担当者: ${state.assignee ?? '未設定'}`,
+      `拠点: ${state.base ?? '未設定'}`,
+      `件数: ${state.visitCount ?? '未設定'}`,
+      `優先: ${state.priority ?? '未設定'}`,
+      `制約: ${state.constraints.length ? state.constraints.join(' / ') : 'なし'}`,
+      state.freeNotes.length ? `メモ: ${state.freeNotes.slice(-2).join(' / ')}` : null
+    ].filter(Boolean).join('  ｜  ');
+    outputNote.textContent = note;
+
+    const K = Math.min(8, plans[0].order.length);
+    const header = `
+      <thead>
+        <tr>
+          <th style="width:92px;">案</th>
+          <th>コンセプト</th>
+          <th style="width:110px;">先頭の訪問</th>
+          <th style="width:90px;">難易度</th>
+          <th style="width:90px;">目安移動</th>
+          <th>並び（上位${K}件）</th>
+        </tr>
+      </thead>
+    `;
+
+    const rows = plans.map(p=>{
+      const top = p.order[0];
+      const list = p.order.slice(0,K).map(x=>`${x.id}（${x.area}/${x.type}）`).join(' → ');
+      const totalTravel = p.order.slice(0,K).reduce((s,x)=>s+x.travelMin,0);
+      return `
+        <tr>
+          <td><span class="badge ${p.badge}">${p.tier}</span></td>
+          <td>${escapeHtml(p.concept)}</td>
+          <td>${escapeHtml(top.id)}<div class="small muted">${escapeHtml(top.window)} / ${escapeHtml(top.area)}</div></td>
+          <td>${escapeHtml(top.difficulty)}</td>
+          <td>${Math.round(totalTravel)}分</td>
+          <td>${escapeHtml(list)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    planTable.innerHTML = header + `<tbody>${rows}</tbody>`;
+  }
+
+  // Voice input (Web Speech API)
+  function setupVoice(){
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition){
+      btnVoice.addEventListener('click', ()=>{
+        addMsg('bot', 'このブラウザは音声入力に対応していません。テキスト入力をご利用ください。');
+      });
+      return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = ()=>{
+      recognizing = true;
+      btnVoice.textContent = '🎤 聞いています...';
+      btnVoice.style.opacity = '0.85';
+    };
+    recognition.onerror = (e)=>{
+      recognizing = false;
+      btnVoice.textContent = '🎤 音声';
+      btnVoice.style.opacity = '1';
+      addMsg('bot', '音声入力でエラーが発生しました。周囲が静かな場所でお試しください。');
+    };
+    recognition.onend = ()=>{
+      recognizing = false;
+      btnVoice.textContent = '🎤 音声';
+      btnVoice.style.opacity = '1';
+    };
+    recognition.onresult = (event)=>{
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++){
+        transcript += event.results[i][0].transcript;
+      }
+      freeInput.value = transcript.trim();
+      // 最終確定のときは自動送信
+      const last = event.results[event.results.length - 1];
+      if(last && last.isFinal){
+        handleFreeInput();
+      }
+    };
+
+    btnVoice.addEventListener('click', ()=>{
+      if(recognizing){
+        recognition.stop();
+        return;
+      }
+      recognition.start();
     });
   }
-  return arr;
-}
 
-function orderMatsu(visits){
-  // prioritize strict time + hard cases earlier, add buffer by spacing high difficulty
-  const v = [...visits];
-  v.sort((a,b)=>{
-    const aw = scoreDifficulty(a.difficulty) + scoreType(a.type) + scoreWindowMatsu(a.window) - a.travelMin*0.02;
-    const bw = scoreDifficulty(b.difficulty) + scoreType(b.type) + scoreWindowMatsu(b.window) - b.travelMin*0.02;
-    return bw - aw;
-  });
-  // spacing: move "高" every other if possible
-  const highs = v.filter(x=>x.difficulty==='高');
-  const rest = v.filter(x=>x.difficulty!=='高');
-  const out = [];
-  while(highs.length || rest.length){
-    if(highs.length) out.push(highs.shift());
-    if(rest.length) out.push(rest.shift());
+  // Sample run: auto fill + auto proceed
+  function runSample(){
+    resetAll();
+    // Simulate picks by setting state directly and pushing steps
+    setTimeout(()=>{ state.assignee='Bさん（中堅）'; renderSummary(); setStep(1); addMsg('me','Bさん（中堅）'); proceed(); }, 350);
+    setTimeout(()=>{ state.base='本社（神奈川）'; renderSummary(); setStep(2); addMsg('me','本社（神奈川）'); proceed(); }, 750);
+    setTimeout(()=>{ state.visitCount='10件'; renderSummary(); setStep(3); addMsg('me','10件'); proceed(); }, 1150);
+    setTimeout(()=>{ state.priority='移動時間最小'; renderSummary(); setStep(4); addMsg('me','移動時間最小'); proceed(); }, 1550);
+    setTimeout(()=>{
+      state.constraints = ['同エリアまとめたい','午後は渋滞が増える'];
+      renderSummary();
+      addMsg('me','制約：同エリアまとめたい / 午後は渋滞が増える');
+      setStep(5);
+      generatePlans();
+    }, 2100);
   }
-  return out;
-}
 
-function orderTake(visits){
-  // balance: group by area, but bump urgent/complaint
-  const v = [...visits];
-  v.sort((a,b)=>{
-    const aw = scoreType(a.type)*2 + scoreDifficulty(a.difficulty) - a.travelMin*0.03 + scoreAreaGroup(a.area);
-    const bw = scoreType(b.type)*2 + scoreDifficulty(b.difficulty) - b.travelMin*0.03 + scoreAreaGroup(b.area);
-    return bw - aw;
-  });
-  return v;
-}
+  // Events
+  btnSend.addEventListener('click', handleFreeInput);
+  freeInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleFreeInput(); });
+  btnReset.addEventListener('click', resetAll);
+  btnSample.addEventListener('click', runSample);
 
-function orderUme(visits){
-  // fast: nearest first
-  const v = [...visits];
-  v.sort((a,b)=>a.travelMin - b.travelMin);
-  return v;
-}
-
-function scoreDifficulty(d){
-  if(d==='高') return 3;
-  if(d==='中') return 2;
-  return 1;
-}
-function scoreType(t){
-  // high priority types
-  if(t==='クレーム対応') return 4;
-  if(t==='緊急対応') return 3;
-  if(t==='初回訪問') return 2;
-  return 1;
-}
-function scoreWindowMatsu(w){
-  // matu: prefer morning fixed
-  if(w==='午前') return 2.5;
-  if(w==='午後') return 1.2;
-  return 1.0;
-}
-function scoreAreaGroup(a){
-  // mild preference for central grouping
-  if(a==='中央') return 1.2;
-  return 1.0;
-}
-
-function renderPlanTable(plans){
-  outputCard.style.display = 'block';
-
-  const note = [
-    `担当者: ${state.assignee ?? '未設定'}`,
-    `拠点: ${state.base ?? '未設定'}`,
-    `件数: ${state.visitCount ?? '未設定'}`,
-    `優先: ${state.priority ?? '未設定'}`,
-    `制約: ${state.constraints.length ? state.constraints.join(' / ') : 'なし'}`,
-    state.freeNotes.length ? `メモ: ${state.freeNotes.slice(-2).join(' / ')}` : null
-  ].filter(Boolean).join('  ｜  ');
-  outputNote.textContent = note;
-
-  // Build table: rows = (tier x top K)
-  const K = Math.min(8, plans[0].order.length);
-  const header = `
-    <thead>
-      <tr>
-        <th style="width:92px;">案</th>
-        <th>コンセプト</th>
-        <th style="width:110px;">先頭の訪問</th>
-        <th style="width:90px;">難易度</th>
-        <th style="width:90px;">目安移動</th>
-        <th>並び（上位${K}件）</th>
-      </tr>
-    </thead>
-  `;
-
-  const rows = plans.map(p=>{
-    const top = p.order[0];
-    const list = p.order.slice(0,K).map(x=>`${x.id}（${x.area}/${x.type}）`).join(' → ');
-    const totalTravel = p.order.slice(0,K).reduce((s,x)=>s+x.travelMin,0);
-    return `
-      <tr>
-        <td><span class="badge ${p.badge}">${p.tier}</span></td>
-        <td>${escapeHtml(p.concept)}</td>
-        <td>${escapeHtml(top.id)}<div class="small muted">${escapeHtml(top.window)} / ${escapeHtml(top.area)}</div></td>
-        <td>${escapeHtml(top.difficulty)}</td>
-        <td>${Math.round(totalTravel)}分</td>
-        <td>${escapeHtml(list)}</td>
-      </tr>
-    `;
-  }).join('');
-
-  planTable.innerHTML = header + `<tbody>${rows}</tbody>`;
-
-  addMsg('bot',
-    `出力しました。次は「この3案をどう比較して意思決定
+  // Init
+  resetAll();
+  setupVoice();
+</script>
+</body>
+</html>
