@@ -115,7 +115,7 @@
     .panel .hd .sub{color:var(--muted); font-size:12px}
     .panel .bd{padding:14px; display:flex; flex-direction:column; gap:12px; overflow:auto;}
 
-    /* フッター：PCは1行。スマホは2行にして横並び維持 */
+    /* フッター：スマホは2段、横並び維持 */
     .panel .ft{
       padding:12px 14px;
       border-top:1px solid var(--border);
@@ -204,7 +204,7 @@
     }
     .card h3{margin:0 0 10px; font-size:14px}
 
-    /* サマリー：縦リスト→2列のコンパクトカードに変更 */
+    /* サマリー：2列カード */
     .summary-grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -224,34 +224,81 @@
     .sum-k{font-size:12px; color:var(--muted); font-weight:800}
     .sum-v{font-size:13.5px; font-weight:800; line-height:1.35}
     .sum-v.muted{font-weight:700}
+    .sum-wide{ grid-column: 1 / -1; }
 
-    .sum-wide{
-      grid-column: 1 / -1; /* 制約は横幅いっぱい */
+    /* ルート案：カード表示（PCは3列、スマホは1列） */
+    .plan-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
     }
-
-    .hr{height:1px; background: var(--border); margin:12px 0}
-
-    table{
-      width:100%;
-      border-collapse: collapse;
-      font-size:12.5px;
-      overflow:hidden;
+    @media (max-width: 980px){
+      .plan-grid{ grid-template-columns: 1fr; }
+    }
+    .plan-card{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius: 16px;
+      padding:12px;
+      box-shadow: 0 8px 18px rgba(17,24,39,.06);
+    }
+    .plan-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .plan-title{
+      font-weight:900;
+      font-size:14px;
+      line-height:1.2;
+    }
+    .plan-sub{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:4px;
+      line-height:1.4;
+    }
+    .plan-metrics{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      margin-top:10px;
+    }
+    .metric{
+      border:1px solid var(--border);
+      background: rgba(17,24,39,.02);
       border-radius: 14px;
-      border: 1px solid var(--border);
-      background: #fff;
+      padding:8px 10px;
     }
-    th, td{
-      border-bottom:1px solid rgba(17,24,39,.06);
-      padding:10px 10px;
-      text-align:left;
-      vertical-align:top;
+    .metric .k{ color:var(--muted); font-size:11px; font-weight:800; }
+    .metric .v{ font-size:13px; font-weight:900; margin-top:2px; }
+    .plan-detail{
+      margin-top:10px;
+      border-top:1px solid var(--border);
+      padding-top:10px;
     }
-    th{
-      color: var(--muted);
-      font-weight:800;
-      background: rgba(17,24,39,.03);
+    .plan-detail details{
+      border:1px solid var(--border);
+      border-radius: 14px;
+      padding:8px 10px;
+      background: rgba(17,24,39,.02);
     }
-    tr:last-child td{border-bottom:none}
+    .plan-detail summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#0b1b4a;
+      outline:none;
+    }
+    .plan-route{
+      margin-top:8px;
+      color:#111827;
+      font-size:13px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
 
     .badge{
       display:inline-flex; align-items:center; gap:6px;
@@ -266,13 +313,12 @@
     .b-take{border-color: rgba(124,58,237,.25); background: rgba(124,58,237,.10); color:#6d28d9}
     .b-ume{border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.10); color:#166534}
 
-    /* Mobile ergonomics */
     @media (max-width: 520px){
       .panel{min-height: 560px;}
       .panel .bd{padding:12px}
       button{padding:11px 12px}
       .chip{padding:11px 12px}
-      .summary-grid{grid-template-columns: 1fr 1fr;} /* 2列維持 */
+      .summary-grid{grid-template-columns: 1fr 1fr;}
       .ft-row{gap:8px;}
     }
   </style>
@@ -297,7 +343,6 @@
 
 <main>
   <div class="grid">
-    <!-- Chat -->
     <section class="panel" aria-label="対話パネル">
       <div class="hd">
         <div>
@@ -309,7 +354,6 @@
 
       <div class="bd" id="chat"></div>
 
-      <!-- フッター：スマホでも「入力例」が縦に落ちず、横並びを維持 -->
       <div class="ft">
         <div class="ft-row">
           <button id="btnSample" class="primary" style="flex:1">入力例で一気に進める</button>
@@ -322,7 +366,6 @@
       </div>
     </section>
 
-    <!-- Summary / Output -->
     <aside class="panel" aria-label="結果パネル">
       <div class="hd">
         <div>
@@ -334,37 +377,13 @@
       <div class="bd">
         <div class="card">
           <h3>今回の条件</h3>
-
-          <div class="summary-grid" id="summaryGrid">
-            <div class="sum-item">
-              <div class="sum-k">担当者</div>
-              <div class="sum-v muted">未設定</div>
-            </div>
-            <div class="sum-item">
-              <div class="sum-k">出発拠点</div>
-              <div class="sum-v muted">未設定</div>
-            </div>
-            <div class="sum-item">
-              <div class="sum-k">訪問件数</div>
-              <div class="sum-v muted">未設定</div>
-            </div>
-            <div class="sum-item">
-              <div class="sum-k">優先</div>
-              <div class="sum-v muted">未設定</div>
-            </div>
-            <div class="sum-item sum-wide">
-              <div class="sum-k">制約</div>
-              <div class="sum-v muted">未設定</div>
-            </div>
-          </div>
+          <div class="summary-grid" id="summaryGrid"></div>
         </div>
 
         <div class="card" id="outputCard" style="display:none;">
           <h3>ルート案（松 / 竹 / 梅）</h3>
           <div class="small muted" id="outputNote" style="margin-bottom:10px;"></div>
-          <div style="overflow:auto;">
-            <table id="planTable"></table>
-          </div>
+          <div id="planGrid" class="plan-grid"></div>
         </div>
       </div>
     </aside>
@@ -381,7 +400,6 @@
     constraints: [],
     freeNotes: [],
   };
-
   const STEPS_TOTAL = 5;
 
   const chatEl = document.getElementById('chat');
@@ -390,7 +408,7 @@
 
   const summaryGrid = document.getElementById('summaryGrid');
   const outputCard = document.getElementById('outputCard');
-  const planTable = document.getElementById('planTable');
+  const planGrid = document.getElementById('planGrid');
   const outputNote = document.getElementById('outputNote');
 
   const freeInput = document.getElementById('freeInput');
@@ -407,6 +425,15 @@
     stepLabel.textContent = `Step ${Math.min(state.step, STEPS_TOTAL)}/${STEPS_TOTAL}`;
     statusLabel.textContent = (state.step >= STEPS_TOTAL) ? '出力済み' : '入力中';
     renderSummary();
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
   }
 
   function addMsg(role, text){
@@ -462,15 +489,6 @@
     return [...container.querySelectorAll('.chip.selected')].map(c=>c.dataset.value);
   }
 
-  function escapeHtml(str){
-    return String(str)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#039;");
-  }
-
   function renderSummary(){
     const vAssignee = state.assignee ?? '未設定';
     const vBase = state.base ?? '未設定';
@@ -513,10 +531,9 @@
 
     chatEl.innerHTML = '';
     outputCard.style.display = 'none';
-    planTable.innerHTML = '';
+    planGrid.innerHTML = '';
     outputNote.textContent = '';
     setStep(0);
-
     boot();
   }
 
@@ -617,7 +634,6 @@
     state.freeNotes.push(text);
     freeInput.value = '';
 
-    // lightweight parser
     const t = text;
     if(!state.priority && /(遅刻|時間|厳守)/.test(t)) state.priority = '遅刻ゼロ（時間厳守）';
     if(!state.priority && /(移動|最小)/.test(t)) state.priority = '移動時間最小';
@@ -628,7 +644,6 @@
       if(mm) state.assignee = mm[1];
     }
     renderSummary();
-
     addMsg('bot', '承知しました。必要条件を選ぶと、すぐに3案を出せます。');
   }
 
@@ -643,7 +658,7 @@
       { tier:'梅', badge:'b-ume', concept:'近い順に回して最短で終える', order: orderUme(visits) },
     ];
 
-    renderPlanTable(plans);
+    renderPlanCards(plans);
   }
 
   function makeDummyVisits(n){
@@ -657,13 +672,7 @@
       const difficulty = ['低','中','高'][(i*3) % 3];
       const travel = 10 + ((i*13) % 45);
       const window = (i%3===0) ? '午前' : (i%3===1 ? '午後' : '終日');
-      arr.push({
-        id: `案件${String(i).padStart(2,'0')}`,
-        area, type, difficulty,
-        travelMin: travel,
-        window,
-        note: `${base}→${area} / ${type}`,
-      });
+      arr.push({ id:`案件${String(i).padStart(2,'0')}`, area, type, difficulty, travelMin:travel, window, note:`${base}→${area} / ${type}` });
     }
     return arr;
   }
@@ -684,7 +693,6 @@
     }
     return out;
   }
-
   function orderTake(visits){
     const v = [...visits];
     v.sort((a,b)=>{
@@ -694,35 +702,23 @@
     });
     return v;
   }
-
   function orderUme(visits){
     const v = [...visits];
     v.sort((a,b)=>a.travelMin - b.travelMin);
     return v;
   }
 
-  function scoreDifficulty(d){
-    if(d==='高') return 3;
-    if(d==='中') return 2;
-    return 1;
-  }
+  function scoreDifficulty(d){ return d==='高'?3 : d==='中'?2 : 1; }
   function scoreType(t){
     if(t==='クレーム対応') return 4;
     if(t==='緊急対応') return 3;
     if(t==='初回訪問') return 2;
     return 1;
   }
-  function scoreWindowMatsu(w){
-    if(w==='午前') return 2.5;
-    if(w==='午後') return 1.2;
-    return 1.0;
-  }
-  function scoreAreaGroup(a){
-    if(a==='中央') return 1.2;
-    return 1.0;
-  }
+  function scoreWindowMatsu(w){ return w==='午前'?2.5 : w==='午後'?1.2 : 1.0; }
+  function scoreAreaGroup(a){ return a==='中央'?1.2 : 1.0; }
 
-  function renderPlanTable(plans){
+  function renderPlanCards(plans){
     outputCard.style.display = 'block';
 
     const note = [
@@ -736,39 +732,46 @@
     outputNote.textContent = note;
 
     const K = Math.min(8, plans[0].order.length);
-    const header = `
-      <thead>
-        <tr>
-          <th style="width:92px;">案</th>
-          <th>コンセプト</th>
-          <th style="width:110px;">先頭の訪問</th>
-          <th style="width:90px;">難易度</th>
-          <th style="width:90px;">目安移動</th>
-          <th>並び（上位${K}件）</th>
-        </tr>
-      </thead>
-    `;
 
-    const rows = plans.map(p=>{
+    planGrid.innerHTML = plans.map(p=>{
       const top = p.order[0];
-      const list = p.order.slice(0,K).map(x=>`${x.id}（${x.area}/${x.type}）`).join(' → ');
-      const totalTravel = p.order.slice(0,K).reduce((s,x)=>s+x.travelMin,0);
+      const list = p.order.slice(0, K).map(x=>`${x.id}（${x.area}/${x.type}）`).join(' → ');
+      const totalTravel = p.order.slice(0, K).reduce((s,x)=>s + x.travelMin, 0);
+      const badgeClass = (p.tier === '松') ? 'b-matsu' : (p.tier === '竹' ? 'b-take' : 'b-ume');
+
       return `
-        <tr>
-          <td><span class="badge ${p.badge}">${p.tier}</span></td>
-          <td>${escapeHtml(p.concept)}</td>
-          <td>${escapeHtml(top.id)}<div class="small muted">${escapeHtml(top.window)} / ${escapeHtml(top.area)}</div></td>
-          <td>${escapeHtml(top.difficulty)}</td>
-          <td>${Math.round(totalTravel)}分</td>
-          <td>${escapeHtml(list)}</td>
-        </tr>
+        <div class="plan-card">
+          <div class="plan-top">
+            <div>
+              <div class="plan-title"><span class="badge ${badgeClass}">${p.tier}</span> ${escapeHtml(p.concept)}</div>
+              <div class="plan-sub">
+                先頭：<b>${escapeHtml(top.id)}</b>（${escapeHtml(top.window)} / ${escapeHtml(top.area)} / 難易度:${escapeHtml(top.difficulty)}）
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-metrics">
+            <div class="metric">
+              <div class="k">目安移動（上位${K}件）</div>
+              <div class="v">${Math.round(totalTravel)}分</div>
+            </div>
+            <div class="metric">
+              <div class="k">表示</div>
+              <div class="v">${escapeHtml(String(K))}件</div>
+            </div>
+          </div>
+
+          <div class="plan-detail">
+            <details>
+              <summary>並び（上位${K}件）を表示</summary>
+              <div class="plan-route">${escapeHtml(list)}</div>
+            </details>
+          </div>
+        </div>
       `;
     }).join('');
-
-    planTable.innerHTML = header + `<tbody>${rows}</tbody>`;
   }
 
-  // Voice input
   function setupVoice(){
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SpeechRecognition){
@@ -811,10 +814,7 @@
     };
 
     btnVoice.addEventListener('click', ()=>{
-      if(recognizing){
-        recognition.stop();
-        return;
-      }
+      if(recognizing){ recognition.stop(); return; }
       recognition.start();
     });
   }
